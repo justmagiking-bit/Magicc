@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Messages</title>
 <style>
   :root{
@@ -13,6 +15,7 @@
     --ios-glass-strong:rgba(255,255,255,0.22);
     --ios-text:#ffffff;
     --ios-sep:rgba(255,255,255,0.18);
+    --lock-clock-color:#ffffff;
     --sf:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
@@ -30,18 +33,19 @@
     background:#000;
   }
   .screen{
-    position:absolute; inset:0;
+    position:absolute; inset:0; top:0; height:100vh; height:100dvh;
     opacity:0; visibility:hidden;
     transform:scale(1.02);
     transition:opacity .38s cubic-bezier(.4,0,.2,1), transform .38s cubic-bezier(.4,0,.2,1);
     pointer-events:none;
+    overflow:hidden;
   }
   .screen.active{
     opacity:1; visibility:visible; transform:scale(1);
     pointer-events:auto;
   }
 
-  /* ---------- Status Bar ---------- */
+  /* ---------- Status Bar (transparent, sits on top of the wallpaper) ---------- */
   .status-bar{
     position:absolute; top:0; left:0; right:0;
     height:47px;
@@ -50,13 +54,25 @@
     color:#fff;
     font-size:15px; font-weight:600;
     letter-spacing:-0.2px;
-    z-index:40;
+    background:transparent;
+    z-index:9999;
     padding-top:env(safe-area-inset-top,0);
+    text-shadow:0 1px 3px rgba(0,0,0,.35);
   }
   .status-bar .status-time{ min-width:54px; }
   .status-icons{ display:flex; align-items:center; gap:5px; }
   .status-net{
     font-size:13px; font-weight:600; letter-spacing:.2px; margin:0 1px;
+  }
+  .status-batt-pct{
+    font-size:14px; font-weight:600; margin-right:1px;
+  }
+
+  /* ---------- Wallpaper layers (shared by lock + home screens) ---------- */
+  .wallpaper{
+    position:absolute; top:0; left:0; right:0; bottom:0;
+    width:100%; height:100%;
+    object-fit:cover; display:none;
   }
 
   /* ---------- LOCK SCREEN ---------- */
@@ -68,7 +84,7 @@
   }
   .lock-hotzone{
     position:absolute; top:0; right:0; width:110px; height:110px;
-    z-index:50;
+    z-index:10000;
     -webkit-touch-callout:none;
     -webkit-user-select:none;
     touch-action:none;
@@ -77,15 +93,20 @@
     position:absolute; top:0; left:0; right:0; bottom:0;
     display:flex; flex-direction:column; align-items:center;
     padding-top:64px;
+    z-index:10;
   }
-  .lock-time-wrap{ text-align:center; color:#fff; margin-bottom:18px; }
+  .lock-time-wrap{ text-align:center; margin-bottom:18px; }
   .lock-date{
+    color:var(--lock-clock-color);
     font-size:17px; font-weight:600; opacity:.92; letter-spacing:.2px;
+    text-shadow:0 2px 10px rgba(0,0,0,.4);
   }
   .lock-time{
+    color:var(--lock-clock-color);
     font-size:86px; font-weight:600; line-height:1; margin-top:2px;
     letter-spacing:-1px;
     font-variant-numeric:tabular-nums;
+    text-shadow:0 2px 14px rgba(0,0,0,.4);
   }
   .passcode-wrap{
     margin-top:auto; margin-bottom:env(safe-area-inset-bottom,26px);
@@ -94,6 +115,7 @@
   }
   .passcode-label{
     color:#fff; font-size:16px; font-weight:600; margin-bottom:16px; opacity:.95;
+    text-shadow:0 1px 6px rgba(0,0,0,.4);
   }
   .dots{ display:flex; gap:18px; margin-bottom:26px; height:14px; align-items:center; }
   .dot{
@@ -142,10 +164,6 @@
       radial-gradient(ellipse at 90% 90%, #6a5ae0 0%, transparent 55%),
       linear-gradient(160deg,#232526,#0f0f10);
   }
-  .wallpaper{
-    position:absolute; inset:0; width:100%; height:100%;
-    object-fit:cover; display:none;
-  }
   .home-clock{
     position:absolute; top:70px; left:24px;
     color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.35);
@@ -165,7 +183,8 @@
 
   /* ---------- NOTIFICATION BANNER ---------- */
   .notif-banner{
-    position:absolute; left:8px; right:8px; top:8px;
+    position:absolute; left:8px; right:8px;
+    top:calc(env(safe-area-inset-top, 0px) + 48px);
     background:rgba(60,60,63,.78);
     -webkit-backdrop-filter:blur(24px) saturate(1.6);
     backdrop-filter:blur(24px) saturate(1.6);
@@ -173,9 +192,9 @@
     padding:12px 14px;
     display:flex; gap:11px; align-items:flex-start;
     box-shadow:0 10px 30px rgba(0,0,0,.35);
-    transform:translateY(-140%);
+    transform:translateY(calc(-100% - 60px));
     transition:transform .5s cubic-bezier(.2,.9,.25,1.15);
-    z-index:60;
+    z-index:200;
     cursor:pointer;
   }
   .notif-banner.show{ transform:translateY(0); }
@@ -301,6 +320,14 @@
   .wallpaper-preview{
     width:100%; max-height:160px; object-fit:cover; border-radius:10px; margin-top:8px; display:none;
   }
+  .color-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 12px;
+  }
+  .color-row-label{ color:#fff; font-size:15.5px; }
+  .color-row input[type="color"]{
+    width:44px; height:32px; border:none; border-radius:8px; background:none; padding:0; cursor:pointer;
+  }
   .list-textarea{
     width:100%; height:170px; background:rgba(255,255,255,.06); color:#eaeaea;
     border:none; outline:none; padding:12px 14px; font-size:14.5px; border-radius:14px;
@@ -333,6 +360,7 @@
 
   <!-- ============ LOCK SCREEN ============ -->
   <div id="lockScreen" class="screen active">
+    <img id="lockWallpaperImg" class="wallpaper" alt="">
     <div class="status-bar" id="statusBarLock"></div>
     <div class="lock-hotzone" id="setupHotzone"></div>
     <div class="lock-content">
@@ -369,7 +397,7 @@
   <!-- ============ HOME SCREEN ============ -->
   <div id="homeScreen" class="screen">
     <div class="wallpaper-fallback"></div>
-    <img id="wallpaperImg" class="wallpaper" alt="">
+    <img id="homeWallpaperImg" class="wallpaper" alt="">
     <div class="status-bar" id="statusBarHome"></div>
     <div class="home-clock">
       <div class="home-clock-time" id="homeClockTime">9:41</div>
@@ -432,9 +460,26 @@
       </div>
 
       <div class="setup-section">
-        <div class="setup-label">Home Screen Background</div>
-        <div class="setup-card"><input class="setup-file" id="wallpaperInput" type="file" accept="image/*"></div>
-        <img class="wallpaper-preview" id="wallpaperPreview">
+        <div class="setup-label">Lock Screen Wallpaper</div>
+        <div class="setup-card"><input class="setup-file" id="lockWallpaperInput" type="file" accept="image/*"></div>
+        <img class="wallpaper-preview" id="lockWallpaperPreview">
+      </div>
+
+      <div class="setup-section">
+        <div class="setup-label">Home Screen Wallpaper</div>
+        <div class="setup-card"><input class="setup-file" id="homeWallpaperInput" type="file" accept="image/*"></div>
+        <img class="wallpaper-preview" id="homeWallpaperPreview">
+      </div>
+
+      <div class="setup-section">
+        <div class="setup-label">Lock Screen Clock Color</div>
+        <div class="setup-card">
+          <div class="color-row">
+            <span class="color-row-label">Clock &amp; date color</span>
+            <input type="color" id="clockColorInput" value="#ffffff">
+          </div>
+        </div>
+        <div class="setup-note">Pick a color that reads well against your lock screen wallpaper.</div>
       </div>
 
       <div class="setup-section">
@@ -501,10 +546,11 @@
   /* =========================================================
      DEFAULT DATA
   ========================================================= */
-  var STORAGE_KEY = "iosTrickConfig_v2";
+  var STORAGE_KEY = "iosTrickConfig_v3";
 
   var DEFAULT_SENDER = "Psychic Friend";
   var DEFAULT_TEMPLATE = "I can feel the vibe, colour [COLOR] and that you very much like this celebrity [CELEBRITY] and I hope that one day you will go to [COUNTRY].";
+  var DEFAULT_CLOCK_COLOR = "#ffffff";
 
   var DEFAULT_COLORS = ["Yellow","Red","Orange","Green","Blue","Purple","Pink","Brown","Black","White",
     "Gray","Cyan","Magenta","Maroon","Navy","Olive","Teal","Lime","Indigo","Violet",
@@ -528,7 +574,9 @@
     return {
       sender: DEFAULT_SENDER,
       template: DEFAULT_TEMPLATE,
-      wallpaper: "",
+      lockWallpaper: "",
+      homeWallpaper: "",
+      clockColor: DEFAULT_CLOCK_COLOR,
       colors: DEFAULT_COLORS.slice(),
       celebs: DEFAULT_CELEBS.slice(),
       countries: DEFAULT_COUNTRIES.slice()
@@ -548,7 +596,9 @@
       var d = defaultConfig();
       CONFIG.sender = (saved.sender && saved.sender.trim()) ? saved.sender : d.sender;
       CONFIG.template = (saved.template && saved.template.trim()) ? saved.template : d.template;
-      CONFIG.wallpaper = saved.wallpaper || "";
+      CONFIG.lockWallpaper = saved.lockWallpaper || "";
+      CONFIG.homeWallpaper = saved.homeWallpaper || "";
+      CONFIG.clockColor = saved.clockColor || d.clockColor;
       CONFIG.colors = (Array.isArray(saved.colors) && saved.colors.length) ? saved.colors : d.colors;
       CONFIG.celebs = (Array.isArray(saved.celebs) && saved.celebs.length) ? saved.celebs : d.celebs;
       CONFIG.countries = (Array.isArray(saved.countries) && saved.countries.length) ? saved.countries : d.countries;
@@ -564,26 +614,36 @@
 
   function pad2(n){ return (n < 10 ? "0" : "") + n; }
 
-  function applyWallpaper(){
-    var img = document.getElementById("wallpaperImg");
-    if (CONFIG.wallpaper){
-      img.src = CONFIG.wallpaper;
+  function applyWallpaperImg(imgId, dataUrl){
+    var img = document.getElementById(imgId);
+    if (dataUrl){
+      img.src = dataUrl;
       img.style.display = "block";
     } else {
       img.style.display = "none";
     }
   }
 
+  function applyWallpapers(){
+    applyWallpaperImg("lockWallpaperImg", CONFIG.lockWallpaper);
+    applyWallpaperImg("homeWallpaperImg", CONFIG.homeWallpaper);
+  }
+
+  function applyClockColor(){
+    document.documentElement.style.setProperty("--lock-clock-color", CONFIG.clockColor || DEFAULT_CLOCK_COLOR);
+  }
+
   /* =========================================================
      STATUS BAR + CLOCK
   ========================================================= */
   function statusBarHTML(){
-    // Cellular signal + 5G network indicator + battery. No Wi-Fi icon, per spec.
+    // Cellular signal + 5G network indicator + battery percentage. No Wi-Fi icon, per spec.
     return (
       '<span class="status-time">' + shortTime() + '</span>' +
       '<span class="status-icons">' +
         '<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx=".5" fill="#fff"/><rect x="4.5" y="5" width="3" height="7" rx=".5" fill="#fff"/><rect x="9" y="3" width="3" height="9" rx=".5" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx=".5" fill="#fff"/></svg>' +
         '<span class="status-net">5G</span>' +
+        '<span class="status-batt-pct">100%</span>' +
         '<svg width="25" height="13" viewBox="0 0 25 13"><rect x="1" y="1" width="20" height="11" rx="2.6" stroke="#fff" stroke-opacity=".5" fill="none"/><rect x="2.5" y="2.5" width="15" height="8" rx="1.4" fill="#fff"/><rect x="22" y="4" width="1.6" height="5" rx="0.8" fill="#fff" fill-opacity=".5"/></svg>' +
       '</span>'
     );
@@ -727,13 +787,19 @@
   function populateSetupForm(){
     document.getElementById("senderInput").value = CONFIG.sender;
     document.getElementById("templateInput").value = CONFIG.template;
+    document.getElementById("clockColorInput").value = CONFIG.clockColor || DEFAULT_CLOCK_COLOR;
     document.getElementById("colorsInput").value = listToText(CONFIG.colors);
     document.getElementById("celebsInput").value = listToText(CONFIG.celebs);
     document.getElementById("countriesInput").value = listToText(CONFIG.countries);
 
-    var preview = document.getElementById("wallpaperPreview");
-    if (CONFIG.wallpaper){
-      preview.src = CONFIG.wallpaper;
+    setPreview("lockWallpaperPreview", CONFIG.lockWallpaper);
+    setPreview("homeWallpaperPreview", CONFIG.homeWallpaper);
+  }
+
+  function setPreview(previewId, dataUrl){
+    var preview = document.getElementById(previewId);
+    if (dataUrl){
+      preview.src = dataUrl;
       preview.style.display = "block";
     } else {
       preview.style.display = "none";
@@ -745,14 +811,12 @@
     showScreen("setupScreen");
   }
 
-  function handleWallpaperFile(file){
+  function handleWallpaperFile(file, configKey, previewId){
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function(e){
-      CONFIG.wallpaper = e.target.result;
-      var preview = document.getElementById("wallpaperPreview");
-      preview.src = CONFIG.wallpaper;
-      preview.style.display = "block";
+      CONFIG[configKey] = e.target.result;
+      setPreview(previewId, CONFIG[configKey]);
     };
     reader.readAsDataURL(file);
   }
@@ -761,13 +825,15 @@
     var d = defaultConfig();
     CONFIG.sender = document.getElementById("senderInput").value.trim() || d.sender;
     CONFIG.template = document.getElementById("templateInput").value.trim() || d.template;
+    CONFIG.clockColor = document.getElementById("clockColorInput").value || d.clockColor;
     CONFIG.colors = textToList(document.getElementById("colorsInput").value, d.colors);
     CONFIG.celebs = textToList(document.getElementById("celebsInput").value, d.celebs);
     CONFIG.countries = textToList(document.getElementById("countriesInput").value, d.countries);
-    // wallpaper already stored live in CONFIG.wallpaper via the file handler
+    // lockWallpaper / homeWallpaper are already stored live in CONFIG via the file handlers
 
     var ok = saveConfig();
-    applyWallpaper();
+    applyWallpapers();
+    applyClockColor();
 
     var msg = document.getElementById("setupSaveMsg");
     msg.textContent = ok ? "Saved" : "Saved (storage limit reached — try a smaller image)";
@@ -778,7 +844,8 @@
   function resetSetup(){
     CONFIG = defaultConfig();
     saveConfig();
-    applyWallpaper();
+    applyWallpapers();
+    applyClockColor();
     populateSetupForm();
   }
 
@@ -855,12 +922,19 @@
     document.getElementById("setupClose").addEventListener("click", function(){
       showScreen("lockScreen");
     });
-    document.getElementById("wallpaperInput").addEventListener("change", function(e){
-      handleWallpaperFile(e.target.files && e.target.files[0]);
+    document.getElementById("lockWallpaperInput").addEventListener("change", function(e){
+      handleWallpaperFile(e.target.files && e.target.files[0], "lockWallpaper", "lockWallpaperPreview");
+    });
+    document.getElementById("homeWallpaperInput").addEventListener("change", function(e){
+      handleWallpaperFile(e.target.files && e.target.files[0], "homeWallpaper", "homeWallpaperPreview");
+    });
+    document.getElementById("clockColorInput").addEventListener("input", function(e){
+      // live-preview the clock color while picking, without waiting for Save
+      document.documentElement.style.setProperty("--lock-clock-color", e.target.value);
     });
     document.getElementById("setupSave").addEventListener("click", saveSetup);
     document.getElementById("setupReset").addEventListener("click", function(){
-      if (confirm("Reset sender, template, wallpaper and all lists back to defaults?")){
+      if (confirm("Reset sender, template, wallpapers, clock color and all lists back to defaults?")){
         resetSetup();
       }
     });
@@ -871,7 +945,8 @@
   ========================================================= */
   function init(){
     loadConfig();
-    applyWallpaper();
+    applyWallpapers();
+    applyClockColor();
     refreshClocks();
     setInterval(refreshClocks, 1000);
 
