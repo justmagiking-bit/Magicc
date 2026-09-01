@@ -20,23 +20,21 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
   html,body{
-    margin:0; padding:0;
-    width:100vw; height:100vh; height:-webkit-fill-available; height:100dvh;
+    background:#000; height:100%; margin:0; padding:0; overflow:hidden;
     font-family:var(--sf);
-    background:#000;
-    overflow:hidden;
     -webkit-user-select:none;
   }
   #app{
-    position:relative;
-    top:0;
+    position:fixed; top:0; right:0; bottom:0; left:0;
     width:100vw; height:100vh; height:-webkit-fill-available; height:100dvh;
+    margin:0; padding:0;
     overflow:hidden;
     background:#000;
   }
   .screen{
-    position:absolute; inset:0; top:0;
+    position:fixed; top:0; right:0; bottom:0; left:0;
     width:100vw; height:100vh; height:100dvh;
+    margin:0; padding:0;
     opacity:0; visibility:hidden;
     transform:scale(1.02);
     transition:opacity .38s cubic-bezier(.4,0,.2,1), transform .38s cubic-bezier(.4,0,.2,1);
