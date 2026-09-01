@@ -20,7 +20,8 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
   html,body{
-    margin:0; padding:0; width:100%; height:100%;
+    margin:0; padding:0;
+    width:100vw; height:100vh; height:-webkit-fill-available;
     font-family:var(--sf);
     background:#000;
     overflow:hidden;
@@ -28,7 +29,8 @@
   }
   #app{
     position:relative;
-    width:100vw; height:100vh; height:100dvh;
+    top:0;
+    width:100vw; height:100vh; height:100dvh; height:-webkit-fill-available;
     overflow:hidden;
     background:#000;
   }
@@ -43,29 +45,6 @@
   .screen.active{
     opacity:1; visibility:visible; transform:scale(1);
     pointer-events:auto;
-  }
-
-  /* ---------- Status Bar (transparent, sits on top of the wallpaper) ---------- */
-  .status-bar{
-    position:absolute; top:0; left:0; right:0;
-    height:47px;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 22px 0 26px;
-    color:#fff;
-    font-size:15px; font-weight:600;
-    letter-spacing:-0.2px;
-    background:transparent;
-    z-index:9999;
-    padding-top:env(safe-area-inset-top,0);
-    text-shadow:0 1px 3px rgba(0,0,0,.35);
-  }
-  .status-bar .status-time{ min-width:54px; }
-  .status-icons{ display:flex; align-items:center; gap:5px; }
-  .status-net{
-    font-size:13px; font-weight:600; letter-spacing:.2px; margin:0 1px;
-  }
-  .status-batt-pct{
-    font-size:14px; font-weight:600; margin-right:1px;
   }
 
   /* ---------- Wallpaper layers (shared by lock + home screens) ---------- */
@@ -83,8 +62,9 @@
       linear-gradient(160deg,#1d1130 0%, #0c0a1c 55%, #050510 100%);
   }
   .lock-hotzone{
-    position:absolute; top:0; right:0; width:110px; height:110px;
-    z-index:10000;
+    position:absolute; top:0; right:0; width:110px;
+    height:calc(env(safe-area-inset-top, 20px) + 90px);
+    z-index:500;
     -webkit-touch-callout:none;
     -webkit-user-select:none;
     touch-action:none;
@@ -92,7 +72,7 @@
   .lock-content{
     position:absolute; top:0; left:0; right:0; bottom:0;
     display:flex; flex-direction:column; align-items:center;
-    padding-top:64px;
+    padding-top:calc(env(safe-area-inset-top, 20px) + 44px);
     z-index:10;
   }
   .lock-time-wrap{ text-align:center; margin-bottom:18px; }
@@ -165,7 +145,7 @@
       linear-gradient(160deg,#232526,#0f0f10);
   }
   .home-clock{
-    position:absolute; top:70px; left:24px;
+    position:absolute; top:calc(env(safe-area-inset-top, 20px) + 50px); left:24px;
     color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.35);
     z-index:20;
   }
@@ -184,7 +164,7 @@
   /* ---------- NOTIFICATION BANNER ---------- */
   .notif-banner{
     position:absolute; left:8px; right:8px;
-    top:calc(env(safe-area-inset-top, 0px) + 48px);
+    top:calc(env(safe-area-inset-top, 20px) + 6px);
     background:rgba(60,60,63,.78);
     -webkit-backdrop-filter:blur(24px) saturate(1.6);
     backdrop-filter:blur(24px) saturate(1.6);
@@ -220,8 +200,8 @@
   /* ---------- MESSAGES SCREEN ---------- */
   #messagesScreen{ background:#000; }
   .msg-header{
-    position:absolute; top:47px; left:0; right:0;
-    padding:6px 10px 10px 6px;
+    position:absolute; top:0; left:0; right:0;
+    padding:calc(env(safe-area-inset-top, 20px) + 6px) 10px 10px 6px;
     display:flex; flex-direction:column; align-items:center;
     border-bottom:0.5px solid var(--ios-sep);
     background:#000;
@@ -249,7 +229,7 @@
   .msg-name{ color:#fff; font-size:12.5px; font-weight:500; opacity:.9; }
   .msg-chev-right{ color:rgba(255,255,255,.4); font-size:12px; }
   .msg-body{
-    position:absolute; top:150px; left:0; right:0; bottom:90px;
+    position:absolute; top:calc(env(safe-area-inset-top, 20px) + 109px); left:0; right:0; bottom:90px;
     overflow-y:auto;
     padding:16px 14px 10px;
   }
@@ -291,7 +271,7 @@
   #setupScreen{
     background:#0e0e11; overflow-y:auto; -webkit-overflow-scrolling:touch;
   }
-  .setup-inner{ padding:calc(env(safe-area-inset-top,0) + 22px) 18px 60px; max-width:520px; margin:0 auto; }
+  .setup-inner{ padding:calc(env(safe-area-inset-top,20px) + 22px) 18px 60px; max-width:520px; margin:0 auto; }
   .setup-header{
     display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;
   }
@@ -361,7 +341,6 @@
   <!-- ============ LOCK SCREEN ============ -->
   <div id="lockScreen" class="screen active">
     <img id="lockWallpaperImg" class="wallpaper" alt="">
-    <div class="status-bar" id="statusBarLock"></div>
     <div class="lock-hotzone" id="setupHotzone"></div>
     <div class="lock-content">
       <div class="lock-time-wrap">
@@ -398,7 +377,6 @@
   <div id="homeScreen" class="screen">
     <div class="wallpaper-fallback"></div>
     <img id="homeWallpaperImg" class="wallpaper" alt="">
-    <div class="status-bar" id="statusBarHome"></div>
     <div class="home-clock">
       <div class="home-clock-time" id="homeClockTime">9:41</div>
       <div class="home-clock-date" id="homeClockDate">Monday, January 1</div>
@@ -419,7 +397,6 @@
 
   <!-- ============ MESSAGES SCREEN ============ -->
   <div id="messagesScreen" class="screen">
-    <div class="status-bar" id="statusBarMsg"></div>
     <div class="msg-header">
       <div class="msg-back" id="msgBack"><span class="chev">‹</span><span>10</span></div>
       <div class="msg-contact">
@@ -495,7 +472,7 @@
       <div class="setup-section">
         <div class="setup-label">Countries</div>
         <textarea class="list-textarea" id="countriesInput" spellcheck="false"></textarea>
-        <div class="setup-note">Type one item per line, in any order you like. Each 2-digit passcode is matched automatically to the item whose first two letters share that item's telephone keypad code (e.g. "Yellow" → Y=9, E=3 → 93). If a code has no match, the first item in the list is used instead.</div>
+        <div class="setup-note">Type one item per line, in any order you like — single or multi-word entries both work. Each 2-digit passcode is matched automatically to the item whose first letter and last letter (spaces and punctuation ignored) share that item's telephone keypad code (e.g. "Tom Cruise" → T=8, E=3 → 83; "India" → I=4, A=2 → 42). If a code has no match, the first item in the list is used instead.</div>
       </div>
 
       <button class="setup-save" id="setupSave">Save</button>
@@ -524,18 +501,21 @@
     W:"9",X:"9",Y:"9",Z:"9"
   };
 
-  function wordToT9(word){
-    var letters = (word || "").trim().toUpperCase().replace(/[^A-Z]/g, "");
+  function wordToT9(entry){
+    // Strip everything but letters (so spaces/punctuation in multi-word
+    // entries like "Tom Cruise" don't affect the code), then take the
+    // FIRST letter and the LAST letter of what remains.
+    var letters = (entry || "").trim().toUpperCase().replace(/[^A-Z]/g, "");
     if (letters.length < 2) return null;
-    var c1 = T9_MAP[letters.charAt(0)];
-    var c2 = T9_MAP[letters.charAt(1)];
-    if (!c1 || !c2) return null;
-    return c1 + c2;
+    var first = T9_MAP[letters.charAt(0)];
+    var last = T9_MAP[letters.charAt(letters.length - 1)];
+    if (!first || !last) return null;
+    return first + last;
   }
 
-  // Scans a list in order and returns the first item whose first two
-  // letters produce the given 2-digit code. Falls back to the list's
-  // first item if nothing matches, so the message never breaks.
+  // Scans a list in order and returns the first item whose first+last
+  // letter code matches the given 2-digit code. Falls back to the
+  // list's first item if nothing matches, so the message never breaks.
   function lookupByCode(list, code){
     for (var i = 0; i < list.length; i++){
       if (wordToT9(list[i]) === code) return list[i];
@@ -564,11 +544,11 @@
     "Drake","Kanye West","Kim Kardashian","Cristiano Ronaldo","Lionel Messi","Serena Williams","Roger Federer","LeBron James","Michael Jordan","Usain Bolt",
     "Elon Musk","Bill Gates","Barack Obama","Michelle Obama","Harry Styles","Billie Eilish","The Weeknd","Lady Gaga","Bruno Mars","Katy Perry"];
 
-  var DEFAULT_COUNTRIES = ["England","Afghanistan","Albania","Algeria","Argentina","Armenia","Australia","Austria","Bahamas","Bahrain",
+  var DEFAULT_COUNTRIES = ["India","Afghanistan","Albania","Algeria","Argentina","Armenia","Australia","Austria","Bahamas","Bahrain",
     "Bangladesh","Belgium","Belize","Bhutan","Bolivia","Brazil","Bulgaria","Cambodia","Cameroon","Canada",
     "Chile","China","Colombia","Costa Rica","Croatia","Cuba","Cyprus","Denmark","Ecuador","Egypt",
     "Estonia","Ethiopia","Fiji","Finland","France","Georgia","Germany","Ghana","Greece","Guatemala",
-    "Honduras","Hungary","Iceland","India","Indonesia","Iran","Ireland","Israel","Italy","Jamaica"];
+    "Honduras","Hungary","Iceland","Indonesia","Iran","Ireland","Israel","Italy","Jamaica","Kenya"];
 
   function defaultConfig(){
     return {
@@ -634,21 +614,9 @@
   }
 
   /* =========================================================
-     STATUS BAR + CLOCK
+     CLOCK (no fake status bar — the real device status bar
+     floats over the app natively, per spec)
   ========================================================= */
-  function statusBarHTML(){
-    // Cellular signal + 5G network indicator + battery percentage. No Wi-Fi icon, per spec.
-    return (
-      '<span class="status-time">' + shortTime() + '</span>' +
-      '<span class="status-icons">' +
-        '<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx=".5" fill="#fff"/><rect x="4.5" y="5" width="3" height="7" rx=".5" fill="#fff"/><rect x="9" y="3" width="3" height="9" rx=".5" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx=".5" fill="#fff"/></svg>' +
-        '<span class="status-net">5G</span>' +
-        '<span class="status-batt-pct">100%</span>' +
-        '<svg width="25" height="13" viewBox="0 0 25 13"><rect x="1" y="1" width="20" height="11" rx="2.6" stroke="#fff" stroke-opacity=".5" fill="none"/><rect x="2.5" y="2.5" width="15" height="8" rx="1.4" fill="#fff"/><rect x="22" y="4" width="1.6" height="5" rx="0.8" fill="#fff" fill-opacity=".5"/></svg>' +
-      '</span>'
-    );
-  }
-
   function shortTime(){
     var d = new Date();
     var h = d.getHours() % 12; if (h === 0) h = 12;
@@ -656,22 +624,19 @@
     return h + ":" + m;
   }
 
-  function longDate(){
-    var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function shortDate(){
+    var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     var d = new Date();
-    return days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate();
+    return days[d.getDay()] + " " + d.getDate() + " " + months[d.getMonth()];
   }
 
   function refreshClocks(){
-    var t = shortTime(), dt = longDate();
+    var t = shortTime(), dt = shortDate();
     document.getElementById("lockTime").textContent = t;
     document.getElementById("lockDate").textContent = dt;
     document.getElementById("homeClockTime").textContent = t;
     document.getElementById("homeClockDate").textContent = dt;
-    var bars = document.querySelectorAll(".status-bar");
-    var html = statusBarHTML();
-    for (var i = 0; i < bars.length; i++) bars[i].innerHTML = html;
   }
 
   /* =========================================================
